@@ -100,12 +100,12 @@ def get_ignition_delay(time, target, target_name, ignition_type):
         # Get indices of peaks
         peak_inds = detect_peaks(target, edge=None, mph=1.e-9*np.max(target))
 
-        # Get index of largest peak (overall ignition delay)
-        max_ind = peak_inds[np.argmax(target[peak_inds])]
-
-        #ign_delays = time[peak_inds[np.where((time[peak_inds[peak_inds <= max_ind]]) > 0.0)]]
-
-        ign_delays = time[peak_inds[peak_inds <= max_ind]]
+        if peak_inds.size == 0:
+            ign_delays = np.array([])
+        else:
+            # Get index of largest peak (overall ignition delay)
+            max_ind = peak_inds[np.argmax(target[peak_inds])]
+            ign_delays = time[peak_inds[peak_inds <= max_ind]]
 
     elif ignition_type == 'd/dt max':
         target = first_derivative(time, target)
@@ -113,22 +113,27 @@ def get_ignition_delay(time, target, target_name, ignition_type):
         # maximum value to avoid noise peaks.
         peak_inds = detect_peaks(target, edge=None, mph=1.e-9*np.max(target))
 
-        # Get index of largest peak (overall ignition delay)
-        max_ind = peak_inds[np.argmax(target[peak_inds])]
-
-        ign_delays = time[peak_inds[np.where((time[peak_inds[peak_inds <= max_ind]]) > 0.0)]]
+        if peak_inds.size == 0:
+            ign_delays = np.array([])
+        else:
+            # Get index of largest peak (overall ignition delay)
+            max_ind = peak_inds[np.argmax(target[peak_inds])]
+            ign_delays = time[peak_inds[np.where((time[peak_inds[peak_inds <= max_ind]]) > 0.0)]]
 
     elif ignition_type == '1/2 max':
         # maximum value, and associated index
         max_val = np.max(target)
         peak_inds = detect_peaks(target, edge=None, mph=1.e-9*np.max(target))
-        max_ind = peak_inds[np.argmax(target[peak_inds])]
 
-        # TODO: interpolate for actual half-max value
-        # Find index associated with the 1/2 max value, but only consider
-        # points before the peak
-        half_idx = (np.abs(target[0:max_ind] - 0.5 * max_val)).argmin()
-        ign_delays = np.array([time[half_idx]])
+        if peak_inds.size == 0:
+            ign_delays = np.array([])
+        else:
+            max_ind = peak_inds[np.argmax(target[peak_inds])]
+            # TODO: interpolate for actual half-max value
+            # Find index associated with the 1/2 max value, but only consider
+            # points before the peak
+            half_idx = (np.abs(target[0:max_ind] - 0.5 * max_val)).argmin()
+            ign_delays = np.array([time[half_idx]])
 
     elif ignition_type == 'd/dt max extrapolated':
         # First need to evaluate derivative of the target
@@ -137,10 +142,13 @@ def get_ignition_delay(time, target, target_name, ignition_type):
         # Get indices of peaks, and index of largest peak, which corresponds to
         # the point of maximum deriative
         peak_inds = detect_peaks(target_derivative, edge=None, mph=1.e-9*np.max(target))
-        max_ind = peak_inds[np.argmax(target_derivative[peak_inds])]
 
-        # use slope to extrapolate to intercept with baseline value (0 by default)
-        ign_delays = np.array([time[max_ind] - (target[max_ind] / target_derivative[max_ind])])
+        if peak_inds.size == 0:
+            ign_delays = np.array([])
+        else:
+            max_ind = peak_inds[np.argmax(target_derivative[peak_inds])]
+            # use slope to extrapolate to intercept with baseline value (0 by default)
+            ign_delays = np.array([time[max_ind] - (target[max_ind] / target_derivative[max_ind])])
 
         # TODO: handle target with nonzero baseline?
     else:
