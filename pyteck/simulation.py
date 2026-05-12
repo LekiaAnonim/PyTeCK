@@ -96,12 +96,14 @@ def create_volume_history(mech, temp, pres, reactants, pres_rise, time_end):
 def get_ignition_delay(time, target, target_name, ignition_type):
     """Identify ignition delay based on time, target, and type of detection.
     """
+    no_ignition_delay = np.array([0.0])
+
     if ignition_type == 'max':
         # Get indices of peaks
         peak_inds = detect_peaks(target, edge=None, mph=1.e-9*np.max(target))
 
         if peak_inds.size == 0:
-            ign_delays = np.array([])
+            return no_ignition_delay
         else:
             # Get index of largest peak (overall ignition delay)
             max_ind = peak_inds[np.argmax(target[peak_inds])]
@@ -114,7 +116,7 @@ def get_ignition_delay(time, target, target_name, ignition_type):
         peak_inds = detect_peaks(target, edge=None, mph=1.e-9*np.max(target))
 
         if peak_inds.size == 0:
-            ign_delays = np.array([])
+            return no_ignition_delay
         else:
             # Get index of largest peak (overall ignition delay)
             max_ind = peak_inds[np.argmax(target[peak_inds])]
@@ -126,7 +128,7 @@ def get_ignition_delay(time, target, target_name, ignition_type):
         peak_inds = detect_peaks(target, edge=None, mph=1.e-9*np.max(target))
 
         if peak_inds.size == 0:
-            ign_delays = np.array([])
+            return no_ignition_delay
         else:
             max_ind = peak_inds[np.argmax(target[peak_inds])]
             # TODO: interpolate for actual half-max value
@@ -144,7 +146,7 @@ def get_ignition_delay(time, target, target_name, ignition_type):
         peak_inds = detect_peaks(target_derivative, edge=None, mph=1.e-9*np.max(target_derivative))
 
         if peak_inds.size == 0:
-            ign_delays = np.array([])
+            return no_ignition_delay
         else:
             max_ind = peak_inds[np.argmax(target_derivative[peak_inds])]
             # use slope to extrapolate to intercept with baseline value (0 by default)
