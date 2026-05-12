@@ -141,7 +141,7 @@ def get_ignition_delay(time, target, target_name, ignition_type):
 
         # Get indices of peaks, and index of largest peak, which corresponds to
         # the point of maximum deriative
-        peak_inds = detect_peaks(target_derivative, edge=None, mph=1.e-9*np.max(target))
+        peak_inds = detect_peaks(target_derivative, edge=None, mph=1.e-9*np.max(target_derivative))
 
         if peak_inds.size == 0:
             ign_delays = np.array([])
