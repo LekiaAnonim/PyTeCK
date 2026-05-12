@@ -301,6 +301,24 @@ class TestGetIgnitionDelay(object):
                            rtol=1e-4
                            )
 
+    def test_derivative_max_extrapolated_nonpositive_derivative_returns_zero(self, monkeypatch):
+        """Do not extrapolate when the derivative maximum is not positive.
+        """
+        times = np.linspace(0, 1, 3)
+        target = np.ones_like(times)
+        derivative = np.array([-1.0, 0.0, -1.0])
+
+        monkeypatch.setattr(
+            simulation, 'first_derivative',
+            lambda time, target: derivative
+            )
+
+        ignition_delays = simulation.get_ignition_delay(
+            times, target, 'species', 'd/dt max extrapolated'
+            )
+
+        assert ignition_delays[0] == 0.0
+
     @pytest.mark.parametrize('ignition_type', [
         'max',
         'd/dt max',

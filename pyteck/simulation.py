@@ -140,15 +140,21 @@ def get_ignition_delay(time, target, target_name, ignition_type):
     elif ignition_type == 'd/dt max extrapolated':
         # First need to evaluate derivative of the target
         target_derivative = first_derivative(time, target)
+        max_derivative = np.max(target_derivative)
+
+        if not np.isfinite(max_derivative) or max_derivative <= 0.0:
+            return no_ignition_delay
 
         # Get indices of peaks, and index of largest peak, which corresponds to
         # the point of maximum deriative
-        peak_inds = detect_peaks(target_derivative, edge=None, mph=1.e-9*np.max(target_derivative))
+        peak_inds = detect_peaks(target_derivative, edge=None, mph=1.e-9*max_derivative)
 
         if peak_inds.size == 0:
             return no_ignition_delay
         else:
             max_ind = peak_inds[np.argmax(target_derivative[peak_inds])]
+            if target_derivative[max_ind] <= 0.0:
+                return no_ignition_delay
             # use slope to extrapolate to intercept with baseline value (0 by default)
             ign_delays = np.array([time[max_ind] - (target[max_ind] / target_derivative[max_ind])])
 
